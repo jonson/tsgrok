@@ -25,7 +25,7 @@ While the `tailscale funnel` command is powerful, managing multiple funnels is c
 ## Installation
 
 ### Releases
-See the releases page for the latest releases.  Binaries are provided for major platforms.
+See the [releases](https://github.com/jonson/tsgrok/releases) page for the latest release.  Binaries are provided for major platforms.
 
 ### Go
 The easiest way to install `tsgrok` is using `go install`:
