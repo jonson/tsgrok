@@ -1,4 +1,4 @@
-# tsgrok ✨
+# tsgrok
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/[your-username]/tsgrok)](https://goreportcard.com/report/github.com/[your-username]/tsgrok)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -21,10 +21,6 @@ While the `tailscale funnel` command is powerful, managing multiple funnels is c
 *   **Request Inspection:** Quickly check if traffic is hitting your funnel without needing separate logging.
 *   **Disposable:** Each funnel is created on distinct ephemeral node, all of which live in memory and are destroyed when the app is terminated.  Orphaned ephemeral nodes are automatically cleaned up by Tailscale.
 
-## Requirements
-
-*   **Go:** Version 1.18 or higher (Update if you require a newer version).
-*   **Tailscale:** You need Tailscale installed, configured, and running on your machine. `tsgrok` interacts with your local Tailscale daemon.
 
 ## Installation
 
