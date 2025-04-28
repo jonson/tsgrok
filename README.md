@@ -1,6 +1,6 @@
 # tsgrok
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/[your-username]/tsgrok)](https://goreportcard.com/report/github.com/[your-username]/tsgrok)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jonson/tsgrok)](https://goreportcard.com/report/github.com/jonson/tsgrok)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Expose local http services using Tailscale via an interactive Terminal UI.**
