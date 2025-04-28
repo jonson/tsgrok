@@ -1,5 +1,6 @@
 # tsgrok
 
+[![Latest Release](https://img.shields.io/github/release/jonson/tsgrok.svg)](https://github.com/jonson/tsgrok/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jonson/tsgrok)](https://goreportcard.com/report/github.com/jonson/tsgrok)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
