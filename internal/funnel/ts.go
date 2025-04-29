@@ -250,7 +250,8 @@ func CreateEphemeralFunnel(name string, target string, logger *stdlog.Logger) (F
 
 	// ok go create the funnel
 	tsClient := TailscaleClient{
-		ts: localClient,
+		ts:     localClient,
+		logger: logger,
 	}
 
 	funnelID := uuid.New().String()

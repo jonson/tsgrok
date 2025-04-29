@@ -4,6 +4,7 @@ import (
 	"fmt"
 	stdlog "log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -115,7 +116,11 @@ Detail View:
   tab / → / l: Next Tab
   shift+tab / ← / h: Previous Tab
   c          : Copy Public URL (Info Tab)
-  esc / q    : Back to List View
+  enter      : View Request Details (Request Log Tab)
+  esc    : Back to List View
+
+Request Detail View:
+  esc    : Back to Request Log
 `
 
 // viewState indicates which view is currently active
@@ -127,6 +132,7 @@ const (
 	viewConfirmDelete                  // View for confirming deletion
 	viewDetail                         // View showing details for a selected funnel
 	viewHelp                           // View displaying keybindings/help
+	viewRequestDetail                  // View showing details of a specific proxied request
 )
 
 // --- Model ---
@@ -166,7 +172,8 @@ type model struct {
 	table       table.Model
 	funnelOrder []string // Slice of funnel IDs to maintain order matching table rows
 
-	requestTable table.Model
+	requestTable    table.Model
+	selectedRequest *funnel.CaptureRequestResponse // The request being inspected in viewRequestDetail
 
 	logger *stdlog.Logger
 }
@@ -236,6 +243,7 @@ func createRequestTable() table.Model {
 		{Title: "Method"},
 		{Title: "Status"},
 		{Title: "URL"},
+		{Title: "ID"}, // Hidden column for request ID
 	}
 
 	t := table.New(
@@ -250,7 +258,6 @@ func createRequestTable() table.Model {
 	t.SetStyles(s)
 
 	return t
-
 }
 
 func (m model) Init() tea.Cmd {
@@ -272,6 +279,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.state == viewCreate && (m.funnelNameInput.Focused() || m.funnelTargetInput.Focused()) {
 				// Let the input handler process 'q'
 				break // Fall through to view-specific handlers
+			}
+			// Prevent quitting globally if in request detail view (let view handler decide)
+			if m.state == viewRequestDetail && msg.String() == "q" {
+				break // Fall through to view-specific handlers (which will ignore 'q')
 			}
 			return m, tea.Quit
 		case "?":
@@ -429,6 +440,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			{Title: "Method", Width: 8},
 			{Title: "Status", Width: 8},
 			{Title: "URL", Width: urlWidth},
+			{}, // Hidden column, no title or width needed
 		}
 		m.requestTable.SetColumns(requestColumns)
 
@@ -447,6 +459,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateDetailView(msg)
 	case viewHelp:
 		return m.updateHelpView(msg) // Add call to new update function
+	case viewRequestDetail:
+		return m.updateRequestDetailView(msg)
 	}
 
 	return m, nil
@@ -704,8 +718,36 @@ func (m model) updateDetailView(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil // Do nothing if not on info tab or error
 
-			// Note: We don't have a default case here, so keys not handled above
-			// will fall through to the logic below.
+		case "enter":
+			if m.detailTabIndex == 1 {
+				selectedRow := m.requestTable.SelectedRow()
+				if len(selectedRow) < 5 { // Ensure row and ID exist (index 4)
+					return m, nil // Or handle error
+				}
+				selectedRequestID := selectedRow[4] // Get ID from the hidden column
+
+				funnel, err := m.funnelRegistry.GetFunnel(m.detailedFunnelID)
+				if err == nil {
+					// Find the request by ID in the linked list
+					node := funnel.Requests.Head
+					found := false
+					for node != nil {
+						if node.Request.ID == selectedRequestID {
+							m.selectedRequest = &node.Request
+							m.state = viewRequestDetail
+							m.requestTable.Blur() // Unfocus table when leaving
+							found = true
+							break
+						}
+						node = node.Next
+					}
+
+					if found {
+						return m, nil
+					}
+				}
+			}
+			return m, nil
 		}
 	}
 
@@ -740,6 +782,24 @@ func (m model) updateHelpView(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+// updateRequestDetailView handles updates when the request detail view is active.
+func (m model) updateRequestDetailView(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "esc": // Only Esc goes back to detail view (request log tab)
+			m.state = viewDetail
+			m.detailTabIndex = 1    // Ensure we return to the request log tab
+			m.selectedRequest = nil // Clear the selected request
+			m.requestTable.Focus()  // Refocus the request table
+			return m, nil
+		}
+	}
+	// Handle other message types (like window resize) if needed.
+	// Currently, no other actions are handled in this basic version.
+	return m, nil
+}
+
 // View renders the TUI's UI. It's called after every Update.
 func (m model) View() string {
 	// Footer (Render first to get its height)
@@ -766,6 +826,8 @@ func (m model) View() string {
 		mainContent = m.viewDetailView(contentHeight)
 	case viewHelp:
 		mainContent = m.viewHelpView(contentHeight)
+	case viewRequestDetail:
+		mainContent = m.viewRequestDetailView(contentHeight)
 	}
 
 	finalView := lipgloss.JoinVertical(lipgloss.Left,
@@ -922,6 +984,7 @@ func (m *model) populateRequestTable() {
 			node.Request.Method(),
 			strconv.Itoa(node.Request.StatusCode()),
 			node.Request.Path(),
+			node.Request.ID,
 		})
 		node = node.Next
 	}
@@ -999,6 +1062,8 @@ func (m model) footerView() string {
 		coreHelp = "tab/←/→: tabs, c: copy, esc/q: back, ?: help"
 	case viewHelp: // No specific help needed when already viewing help
 		coreHelp = "esc/q: back, ←/→: scroll"
+	case viewRequestDetail:
+		coreHelp = "esc/q: back"
 	}
 
 	// Combine status message and help text
@@ -1058,4 +1123,63 @@ func (m model) viewHelpView(contentHeight int) string {
 	m.viewport.Height = (contentHeight - 3)
 
 	return m.renderContent("Help", m.viewport.View(), contentHeight, 1)
+}
+
+// viewRequestDetailView renders the details of a selected HTTP request.
+func (m model) viewRequestDetailView(contentHeight int) string {
+	title := "Request Details"
+	if m.selectedRequest == nil {
+		return m.renderContent(title, "Error: No request selected.", contentHeight, 1)
+	}
+
+	requestInfo := fmt.Sprintf(
+		"URL:    %s\nMethod: %s\nStatus: %d",
+		m.selectedRequest.Path(),
+		m.selectedRequest.Method(),
+		m.selectedRequest.StatusCode(),
+	)
+
+	formatHeaders := func(headers map[string]string) string {
+		var builder strings.Builder
+		if len(headers) == 0 {
+			builder.WriteString("  (No headers)")
+		} else {
+			// Get keys and sort them
+			keys := make([]string, 0, len(headers))
+			for k := range headers {
+				keys = append(keys, k)
+			}
+			sort.Strings(keys)
+
+			// Iterate over sorted keys
+			for _, k := range keys {
+				v := headers[k]
+				builder.WriteString(fmt.Sprintf("  %s: %s\n", k, v))
+			}
+			// Remove trailing newline
+			result := builder.String()
+			return strings.TrimSuffix(result, "\n")
+		}
+		return builder.String()
+	}
+
+	responseHeadersTitle := lipgloss.NewStyle().Bold(true).Render("Response Headers")
+	responseHeadersContent := formatHeaders(m.selectedRequest.Response.Headers)
+
+	requestHeadersTitle := lipgloss.NewStyle().Bold(true).Render("Request Headers")
+	requestHeadersContent := formatHeaders(m.selectedRequest.Request.Headers)
+
+	// Simple vertical layout for now
+	content := lipgloss.JoinVertical(lipgloss.Left,
+		requestInfo,
+		"\n", // Spacer
+		responseHeadersTitle,
+		responseHeadersContent,
+		"\n", // Spacer
+		requestHeadersTitle,
+		requestHeadersContent,
+	)
+
+	// Use the standard renderContent helper
+	return m.renderContent(title, content, contentHeight, 1)
 }
