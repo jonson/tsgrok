@@ -117,7 +117,7 @@ Detail View:
   shift+tab / ← / h: Previous Tab
   c          : Copy Public URL (Info Tab)
   enter      : View Request Details (Request Log Tab)
-  esc / q    : Back to List View
+  esc    : Back to List View
 
 Request Detail View:
   esc    : Back to Request Log
@@ -243,6 +243,7 @@ func createRequestTable() table.Model {
 		{Title: "Method"},
 		{Title: "Status"},
 		{Title: "URL"},
+		{Title: "ID"}, // Hidden column for request ID
 	}
 
 	t := table.New(
@@ -257,7 +258,6 @@ func createRequestTable() table.Model {
 	t.SetStyles(s)
 
 	return t
-
 }
 
 func (m model) Init() tea.Cmd {
@@ -440,6 +440,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			{Title: "Method", Width: 8},
 			{Title: "Status", Width: 8},
 			{Title: "URL", Width: urlWidth},
+			{}, // Hidden column, no title or width needed
 		}
 		m.requestTable.SetColumns(requestColumns)
 
@@ -717,32 +718,36 @@ func (m model) updateDetailView(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil // Do nothing if not on info tab or error
 
-			// Add enter key handling for request table
 		case "enter":
 			if m.detailTabIndex == 1 {
-				selectedIndex := m.requestTable.Cursor()
+				selectedRow := m.requestTable.SelectedRow()
+				if len(selectedRow) < 5 { // Ensure row and ID exist (index 4)
+					return m, nil // Or handle error
+				}
+				selectedRequestID := selectedRow[4] // Get ID from the hidden column
+
 				funnel, err := m.funnelRegistry.GetFunnel(m.detailedFunnelID)
 				if err == nil {
-					// IMPORTANT: This assumes the table rows are in the same order
-					// as the requests in the funnel's linked list. If sorting or filtering
-					// is added later, this logic needs to change.
+					// Find the request by ID in the linked list
 					node := funnel.Requests.Head
-					for i := 0; i < selectedIndex && node != nil; i++ {
+					found := false
+					for node != nil {
+						if node.Request.ID == selectedRequestID {
+							m.selectedRequest = &node.Request
+							m.state = viewRequestDetail
+							m.requestTable.Blur() // Unfocus table when leaving
+							found = true
+							break
+						}
 						node = node.Next
 					}
-					if node != nil {
-						m.selectedRequest = &node.Request
-						m.state = viewRequestDetail
-						m.requestTable.Blur() // Unfocus table when leaving
+
+					if found {
 						return m, nil
 					}
-					// Handle case where index is out of bounds or node is nil
 				}
-				// Handle funnel retrieval error
 			}
-			// If not on request tab, or error occurred, do nothing for enter
 			return m, nil
-
 		}
 	}
 
@@ -979,6 +984,7 @@ func (m *model) populateRequestTable() {
 			node.Request.Method(),
 			strconv.Itoa(node.Request.StatusCode()),
 			node.Request.Path(),
+			node.Request.ID,
 		})
 		node = node.Next
 	}
@@ -1126,7 +1132,6 @@ func (m model) viewRequestDetailView(contentHeight int) string {
 		return m.renderContent(title, "Error: No request selected.", contentHeight, 1)
 	}
 
-	// Placeholder content - mimicking browser inspect style
 	requestInfo := fmt.Sprintf(
 		"URL:    %s\nMethod: %s\nStatus: %d",
 		m.selectedRequest.Path(),
@@ -1134,7 +1139,6 @@ func (m model) viewRequestDetailView(contentHeight int) string {
 		m.selectedRequest.StatusCode(),
 	)
 
-	// Helper function to format headers
 	formatHeaders := func(headers map[string]string) string {
 		var builder strings.Builder
 		if len(headers) == 0 {
@@ -1150,7 +1154,6 @@ func (m model) viewRequestDetailView(contentHeight int) string {
 			// Iterate over sorted keys
 			for _, k := range keys {
 				v := headers[k]
-				// Simple formatting, adjust as needed
 				builder.WriteString(fmt.Sprintf("  %s: %s\n", k, v))
 			}
 			// Remove trailing newline
