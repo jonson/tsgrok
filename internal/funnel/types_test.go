@@ -200,3 +200,67 @@ func TestRequestList_Add(t *testing.T) {
 
 	})
 }
+
+func TestCaptureRequestResponse_RoundedDuration(t *testing.T) {
+	testCases := []struct {
+		name     string
+		duration time.Duration
+		expected string
+	}{
+		{"Zero duration", 0, "0ms"},
+		{"Milliseconds", 123 * time.Millisecond, "123ms"},
+		{"Half second", 500 * time.Millisecond, "500ms"},
+		{"Just under 1 second", 999 * time.Millisecond, "999ms"},
+		{"Exactly 1 second", 1 * time.Second, "1.0s"},
+		{"1.2 seconds", 1200 * time.Millisecond, "1.2s"},
+		{"1.23 seconds (rounds)", 1234 * time.Millisecond, "1.2s"}, // Should round based on fmt.Sprintf
+		{"Long duration", 5*time.Minute + 30*time.Second + 456*time.Millisecond, "330.5s"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			crr := CaptureRequestResponse{Duration: tc.duration}
+			if got := crr.RoundedDuration(); got != tc.expected {
+				t.Errorf("Expected RoundedDuration() to be %q, got %q", tc.expected, got)
+			}
+		})
+	}
+}
+
+func TestCaptureRequestResponse_Type(t *testing.T) {
+	testCases := []struct {
+		name        string
+		contentType string
+		expected    string
+	}{
+		{"No Content-Type", "", ""},
+		{"JSON", "application/json", "json"},
+		{"JSON with charset", "application/json; charset=utf-8", "json"},
+		{"HTML", "text/html", "html"},
+		{"XML", "text/xml", "xml"},
+		{"CSS", "text/css", "css"},
+		{"JavaScript", "text/javascript", "js"},
+		{"Plain Text", "text/plain", "txt"},
+		{"Image PNG", "image/png", "image"},
+		{"Video MP4", "video/mp4", "video"},
+		{"Application Octet Stream", "application/octet-stream", "application"},
+		{"Weird format", "foo/bar", "foo"},
+		{"Only main type", "audio", "audio"}, 
+		{"Empty string after split", "/", ""}, // Invalid Content-Type
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			headers := make(map[string]string)
+			if tc.contentType != "" {
+				headers["Content-Type"] = tc.contentType
+			}
+			crr := CaptureRequestResponse{
+				Response: CaptureResponse{Headers: headers},
+			}
+			if got := crr.Type(); got != tc.expected {
+				t.Errorf("Expected Type() to be %q for Content-Type %q, got %q", tc.expected, tc.contentType, got)
+			}
+		})
+	}
+}

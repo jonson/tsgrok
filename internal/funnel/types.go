@@ -134,11 +134,11 @@ func (r *CaptureRequestResponse) Type() string {
 	if len(parts) > 0 {
 		return parts[0]
 	}
-	return "unknown"
+	return ""
 }
 
 func (r *CaptureRequestResponse) RoundedDuration() string {
-	if r.Duration.Seconds() > 1 {
+	if r.Duration.Seconds() >= 1 {
 		// we want one decimal place
 		return fmt.Sprintf("%.1fs", r.Duration.Seconds())
 	}
