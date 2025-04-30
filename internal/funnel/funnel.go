@@ -15,7 +15,6 @@ type Funnel struct {
 	Requests   *RequestList
 }
 
-
 // ID returns the unique identifier for the funnel.
 func (f *Funnel) ID() string {
 	if f.HTTPFunnel == nil {
@@ -87,4 +86,3 @@ func (f *Funnel) Destroy() error {
 
 	return nil
 }
-

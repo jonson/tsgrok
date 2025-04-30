@@ -147,7 +147,7 @@ func (s *HttpServer) handleRequest(w http.ResponseWriter, r *http.Request) {
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
 
-		// read the request body, the plan is to expose this in the UI somehow, but that comes 
+		// read the request body, the plan is to expose this in the UI somehow, but that comes
 		// at the expense of increased memory usage...  make this better
 		var reqBodyBytes []byte
 		var err error
