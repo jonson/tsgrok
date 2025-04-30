@@ -1,6 +1,7 @@
 package funnel
 
 import (
+	"fmt"
 	"net/url"
 	"strings"
 	"sync"
@@ -100,4 +101,46 @@ func (r *CaptureRequestResponse) Path() string {
 
 func (r *CaptureRequestResponse) StatusCode() int {
 	return r.Response.StatusCode
+}
+
+func (r *CaptureRequestResponse) Type() string {
+	// use the response content-type header to determine the type of the request
+	contentType := r.Response.Headers["Content-Type"]
+	if contentType == "" {
+		return ""
+	}
+
+	// handle some explicit cases, json, html, xml, css, js, etc.
+	if strings.HasPrefix(contentType, "application/json") {
+		return "json"
+	}
+	if strings.HasPrefix(contentType, "text/html") {
+		return "html"
+	}
+	if strings.HasPrefix(contentType, "text/xml") {
+		return "xml"
+	}
+	if strings.HasPrefix(contentType, "text/css") {
+		return "css"
+	}
+	if strings.HasPrefix(contentType, "text/javascript") {
+		return "js"
+	}
+	if strings.HasPrefix(contentType, "text/plain") {
+		return "txt"
+	}
+	// split the content type by "/" and take the first part
+	parts := strings.Split(contentType, "/")
+	if len(parts) > 0 {
+		return parts[0]
+	}
+	return ""
+}
+
+func (r *CaptureRequestResponse) RoundedDuration() string {
+	if r.Duration.Seconds() >= 1 {
+		// we want one decimal place
+		return fmt.Sprintf("%.1fs", r.Duration.Seconds())
+	}
+	return fmt.Sprintf("%dms", r.Duration.Round(time.Millisecond).Milliseconds())
 }

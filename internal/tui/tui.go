@@ -240,9 +240,11 @@ func createInitialTable() table.Model {
 func createRequestTable() table.Model {
 	columns := []table.Column{
 		{Title: "Timestamp"},
-		{Title: "Method"},
 		{Title: "Status"},
-		{Title: "URL"},
+		{Title: "Method"},
+		{Title: "Path"},
+		{Title: "Type"},
+		{Title: "Duration"},
 		{Title: "ID"}, // Hidden column for request ID
 	}
 
@@ -433,14 +435,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.table.SetColumns(newColumns)
 
-		urlWidth := tableWidth - 12 - 8 - 8 - 20
+		timestampWidth := 12
+		statusWidth := 7
+		methodWidth := 7
+		typeWidth := 8
+		durationWidth := 10
+
+		bufferWidth := 10
+
+		urlWidth := tableWidth - timestampWidth - statusWidth - methodWidth - typeWidth - durationWidth - bufferWidth
 
 		requestColumns := []table.Column{
-			{Title: "Timestamp", Width: 12},
-			{Title: "Method", Width: 8},
-			{Title: "Status", Width: 8},
-			{Title: "URL", Width: urlWidth},
-			{}, // Hidden column, no title or width needed
+			{Title: "Timestamp", Width: timestampWidth},
+			{Title: "Status", Width: statusWidth},
+			{Title: "Method", Width: methodWidth},
+			{Title: "Path", Width: urlWidth},
+			{Title: "Type", Width: typeWidth},
+			{Title: "Duration", Width: durationWidth},
+			{}, // hiddend column that will store the id of the request
 		}
 		m.requestTable.SetColumns(requestColumns)
 
@@ -721,10 +733,10 @@ func (m model) updateDetailView(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if m.detailTabIndex == 1 {
 				selectedRow := m.requestTable.SelectedRow()
-				if len(selectedRow) < 5 { // Ensure row and ID exist (index 4)
+				if len(selectedRow) < 6 { // Ensure row and ID exist (index 5)
 					return m, nil // Or handle error
 				}
-				selectedRequestID := selectedRow[4] // Get ID from the hidden column
+				selectedRequestID := selectedRow[len(selectedRow)-1] // id is always the last column
 
 				funnel, err := m.funnelRegistry.GetFunnel(m.detailedFunnelID)
 				if err == nil {
@@ -981,9 +993,11 @@ func (m *model) populateRequestTable() {
 	for node != nil {
 		rows = append(rows, table.Row{
 			node.Request.Timestamp.Format("15:04:05"),
-			node.Request.Method(),
 			strconv.Itoa(node.Request.StatusCode()),
+			node.Request.Method(),
 			node.Request.Path(),
+			node.Request.Type(),
+			node.Request.RoundedDuration(),
 			node.Request.ID,
 		})
 		node = node.Next
@@ -1133,10 +1147,11 @@ func (m model) viewRequestDetailView(contentHeight int) string {
 	}
 
 	requestInfo := fmt.Sprintf(
-		"URL:    %s\nMethod: %s\nStatus: %d",
+		"URL:    %s\nMethod: %s\nStatus: %d\nDuration: %s",
 		m.selectedRequest.Path(),
 		m.selectedRequest.Method(),
 		m.selectedRequest.StatusCode(),
+		m.selectedRequest.RoundedDuration(),
 	)
 
 	formatHeaders := func(headers map[string]string) string {
