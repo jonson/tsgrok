@@ -24,6 +24,11 @@ builds:
       - darwin
     main: ./cmd/tsgrok
     binary: tsgrok
+    ldflags:
+      - -s -w
+      - -X {{.ModulePath}}/internal/util.ProgramVersion={{.Version}}
+      - -X {{.ModulePath}}/internal/util.Commit={{.Commit}}
+      - -X {{.ModulePath}}/internal/util.Date={{.Date}}
 
 archives:
   - formats: [tar.gz]

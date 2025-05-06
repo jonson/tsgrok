@@ -1056,7 +1056,7 @@ func (m model) viewDetailView(availableHeight int) string {
 
 // footerView renders the footer/status bar
 func (m model) footerView() string {
-	footerText := fmt.Sprintf("%s v%s", util.ProgramName, util.ProgramVersion)
+	footerText := fmt.Sprintf("%s %s", util.ProgramName, util.ProgramVersion)
 
 	// Define core help keys for each view
 	var coreHelp string
