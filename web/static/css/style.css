@@ -1,0 +1,728 @@
+:root {
+    /* TUI-specific palette */
+    --tui-bg-color: #0A0E14; /* Dark background from TUI */
+    --tui-text-color: #D0D5DB; /* General text color */
+    --tui-accent-color: #33FFC4; /* Bright cyan/green accent */
+    --tui-secondary-text-color: #7F8C8D; /* Dimmer text for headers like "Name", "Local Target" */
+    --tui-border-color: var(--tui-accent-color); /* For the main content border */
+    --tui-subtle-border: #2A2E34; /* Subtle border for elements like nav */
+
+    /* Retaining some general variables, but TUI will override where needed */
+    --bg-color: var(--tui-bg-color);
+    --text-color: var(--tui-text-color);
+    --primary-accent: var(--tui-accent-color);
+    --secondary-accent: var(--tui-secondary-text-color);
+    --border-color: var(--tui-subtle-border); 
+    --header-bg: #101419; /* Slightly off from main bg for header */
+    --button-bg: #21262D;
+    --button-hover-bg: #30363D;
+    --link-color: var(--tui-accent-color);
+    --link-hover-color: #80FFE2; /* Lighter shade of accent for hover */
+
+    /* Colors for "Stable Releases" table style */
+    --stable-table-header-bg: #161B22; /* Dark grey, like existing --header-bg */
+    --stable-table-header-text-color: var(--tui-accent-color); /* Cyan text */
+    --stable-table-row-text-color: var(--tui-text-color); /* Light grey text */
+    --stable-table-link-color: var(--tui-accent-color); /* Cyan for links in cells */
+    --stable-table-border-color: #21262D; /* Dark grey for cell borders */
+    --stable-table-row-odd-bg: var(--tui-bg-color); /* #0A0E14, very dark */
+    --stable-table-row-even-bg: #0D1117; /* Slightly lighter dark grey */
+    --stable-table-row-hover-bg: #1E242C; /* Distinct dark hover */
+}
+
+body {
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace; /* Strict monospace */
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    font-size: 15px; /* Increased from 13px for better readability */
+    line-height: 1.4;
+}
+
+.container {
+    width: 95%; /* TUI often uses more screen width */
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 15px 0; /* Reduced padding */
+}
+
+/* Main content area with TUI border */
+main > .container {
+    border: 1px solid var(--tui-border-color);
+    padding: 15px; /* Padding inside the border */
+    margin-top: 15px;
+    background-color: var(--tui-bg-color); /* Ensure bg is consistent */
+}
+
+header {
+    background-color: var(--header-bg); /* Or var(--tui-bg-color) if no distinction needed */
+    border-top: 1px solid var(--tui-accent-color);
+    border-bottom: 1px solid var(--tui-accent-color);
+    padding: 0; /* Padding will be on the container */
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch; /* Make items stretch to fill header height */
+    padding: 0; /* Remove container padding, apply to children */
+    height: 45px; /* Define a fixed height for the header bar */
+}
+
+.program-name {
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    border-right: 1px solid var(--tui-accent-color); /* Border separating title from nav */
+    color: var(--tui-text-color); 
+    font-size: 1em; /* Adjusted size */
+    font-weight: bold;
+}
+
+nav {
+    display: flex;
+    align-items: stretch; /* Stretch nav items vertically */
+    border-left: 1px solid var(--tui-subtle-border); /* Remove if not desired */
+    padding-left: 0; /* Remove nav specific padding */
+}
+
+nav a,
+.nav-icon-placeholder {
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    color: var(--tui-text-color); /* Use main text color for nav items */
+    text-decoration: none;
+    border-left: 1px solid var(--tui-accent-color); /* Vertical separators */
+    font-size: 0.9em;
+    text-transform: uppercase;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+nav a:first-child, /* No left border for the first text nav item if program name has right border */
+.nav-icon-placeholder:first-of-type { 
+    /* border-left: none; Consider if .program-name border is enough */
+}
+
+nav a.active,
+nav a:hover,
+.nav-icon-placeholder:hover {
+    color: var(--tui-bg-color); /* Dark text on hover */
+    background-color: var(--tui-accent-color); /* Accent color background on hover */
+    text-decoration: none; /* Remove TUI underline */
+    border-bottom-width: 1px; /* Ensure border is consistent */
+}
+
+/* Specific for placeholder icons if needed */
+.nav-icon-placeholder {
+    font-size: 1.1em; /* Icons can be slightly larger */
+    text-transform: none; /* Icons are not uppercased */
+}
+
+main {
+    padding-top: 1px; /* Prevent margin collapse with bordered container */
+}
+
+h2 { /* "Active Funnels" title */
+    color: var(--text-color); /* Was primary-accent, TUI title is plain */
+    border-bottom: 1px solid var(--tui-subtle-border);
+    padding-bottom: 8px;
+    margin-top: 0; /* Already inside bordered container */
+    margin-bottom: 15px;
+    font-size: 1.1em; /* Smaller, TUI-like heading */
+    font-weight: normal; /* TUI headers often not bold */
+}
+
+/* Funnel List Styling to emulate TUI table */
+.funnel-list-wrapper { /* New wrapper if needed around funnel-list for specific TUI structure */
+    /* This could hold the "Name" "Local Target" headers if they are outside the <ul> */
+}
+
+.funnel-list-header-row { 
+    display: flex;
+    align-items: center; /* Ensure vertical alignment for header cells */
+    font-size: 0.9em;
+    background-color: var(--stable-table-header-bg);
+    border-bottom: 2px solid var(--stable-table-border-color);
+}
+
+.funnel-list-header-row .name-col {
+    flex-basis: 0;
+    flex-grow: 3;
+    min-width: 150px;
+    padding: 8px 10px;
+    border-right: 1px solid var(--stable-table-border-color);
+    color: var(--stable-table-header-text-color);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.funnel-list-header-row .target-col {
+    flex-basis: 0;
+    flex-grow: 2;
+    min-width: 150px;
+    padding: 8px 10px;
+    border-right: none;
+    color: var(--stable-table-header-text-color);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.funnel-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.funnel-list li {
+    /* margin-bottom: 2px; */ /* Removed, borders will define separation */
+}
+
+.funnel-item { /* This is a row */
+    display: flex;
+    align-items: center; /* Ensure vertical alignment for row cells */
+    color: var(--stable-table-row-text-color);
+    cursor: default; 
+    border-bottom: 1px solid var(--stable-table-border-color);
+    font-size: 1.05em; /* Slightly larger for better readability */
+}
+
+.funnel-list li:last-child > .funnel-item {
+    border-bottom: none; /* No bottom border for the very last row in the list */
+}
+
+/* Column cells within each funnel-item row */
+.funnel-item .name-col,
+.funnel-item .target-col {
+    padding: 8px 10px;
+    border-right: 1px solid var(--stable-table-border-color);
+}
+/* .funnel-item .actions-col was removed, .target-col is now last */
+.funnel-item .target-col {
+    border-right: none;
+}
+
+/* Row Striping */
+.funnel-list li:nth-child(odd) > .funnel-item {
+    background-color: var(--stable-table-row-odd-bg);
+}
+.funnel-list li:nth-child(even) > .funnel-item {
+    background-color: var(--stable-table-row-even-bg);
+}
+
+/* Hover State for Rows - matching "Stable releases" */
+.funnel-list li:hover > .funnel-item {
+    background-color: var(--stable-table-row-hover-bg);
+    color: var(--stable-table-row-text-color); /* Text color remains the default light */
+}
+.funnel-list li:hover > .funnel-item a {
+    color: var(--stable-table-link-color); /* Link color remains link color */
+}
+
+/* Comment out the .active state styling that uses bright cyan background */
+/*
+.funnel-list li.active .funnel-item { 
+    background-color: var(--tui-active-row-bg); 
+    color: var(--tui-active-row-text-color);
+}
+.funnel-list > ul > li:hover > .funnel-item,
+.funnel-list > ul > li.active > .funnel-item {
+    background-color: #33FFC4; 
+    color: var(--tui-active-row-text-color);    
+}
+
+.funnel-list li.active .funnel-item a,
+.funnel-list > ul > li:hover > .funnel-item .funnel-remote-url a,
+.funnel-list > ul > li:hover > .funnel-item .funnel-target,
+.funnel-list > ul > li.active > .funnel-item .funnel-remote-url a,
+.funnel-list > ul > li.active > .funnel-item .funnel-target {
+    color: var(--tui-active-row-text-color) !important; 
+}
+*/
+
+.funnel-info { /* Container for Name/RemoteURL and LocalTarget */
+    flex-grow: 1;
+    display: flex;
+    align-items: center; /* Ensure vertical alignment for these inner columns */
+}
+
+.funnel-info .name-col { /* Corresponds to "Name" header */
+    flex-basis: 0; 
+    flex-grow: 3;  
+    min-width: 150px; 
+    padding-right: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Allow buttons to be visible next to the link */
+    display: flex; /* Make this a flex container */
+    align-items: center; /* Align link and buttons vertically */
+}
+.funnel-info .name-col a {
+    color: var(--stable-table-link-color); 
+    text-decoration: none;
+    /* Let link shrink but not disappear, buttons have fixed size */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.funnel-info .name-col a:hover {
+    text-decoration: underline;
+}
+
+/* Style for buttons now inside name-col */
+.funnel-info .name-col .action-button {
+    margin-left: 8px; /* Space them out from the link and each other */
+    flex-shrink: 0; /* Prevent buttons from shrinking */
+}
+
+.funnel-info .target-col { /* Corresponds to "Local Target" header */
+    flex-basis: 0; /* Allow flexible sizing */
+    flex-grow: 2;  /* Give proportionate space to Local Target */
+    min-width: 150px; /* Minimum width */
+    padding-right: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.funnel-remote-url { /* Was used for Remote URL, repurposed for "Name" column if it holds the primary ID */
+    display: block;
+    font-weight: normal;
+    /* color: var(--tui-text-color); Ensure this doesn't conflict if .name-col a is more specific */
+}
+.funnel-target { /* Used for Local Target column */
+    display: block;
+    color: var(--stable-table-row-text-color); /* Use stable table text color */
+}
+
+/* Funnel Actions - TUI style (very minimal) */
+.funnel-actions {
+    flex-basis: 120px; /* Should match header */
+    text-align: right;
+    white-space: nowrap;
+}
+
+.action-button {
+    background-color: transparent;
+    color: var(--tui-accent-color); /* Buttons use accent color for text/icon */
+    border: none; /* TUI buttons often borderless */
+    padding: 3px 5px;
+    text-decoration: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-left: 5px;
+    font-family: inherit; /* Ensure monospace */
+}
+
+.action-button:hover {
+    color: var(--tui-bg-color); /* Invert on hover for active state */
+    background-color: var(--tui-accent-color);
+}
+
+/* Clear ::before content if it was text like "Copy" */
+.copy-button::before,
+.open-button::before,
+.view-requests-button::before {
+    content: ""; /* Remove text content */
+    margin-right: 0;
+}
+/* Minimalist icon buttons, using actual characters or SVGs if available */
+.copy-button::after { /* Using ::after to not interfere with potential click area of ::before */
+    content: "📋"; /* Simpler icon */
+    font-size: 1.1em;
+}
+.open-button::after {
+    content: "🔗"; /* Simpler icon */
+    font-size: 1.1em;
+}
+.view-requests-button { /* This was primary, make it like other TUI buttons */
+    color: var(--tui-accent-color);
+}
+.view-requests-button::after {
+    content: "🔎"; /* Simpler icon */
+    font-size: 1.1em;
+    margin-left: 3px; /* If there's no text, icon can be standalone */
+}
+.action-button.primary { /* Deprecate if all buttons are same TUI style */
+    background-color: transparent;
+    color: var(--tui-accent-color);
+    border: none;
+}
+.action-button.primary:hover {
+    background-color: var(--tui-accent-color);
+    color: var(--tui-bg-color);
+}
+
+.no-requests {
+    border: 1px dashed var(--tui-secondary-text-color); 
+    padding: 20px;
+    text-align: center;
+    background-color: transparent; /* Match TUI bg */
+    border-radius: 0; /* TUI often has sharp corners */
+    margin-top: 20px;
+}
+
+.no-requests h2 {
+    border-bottom: none;
+    margin-bottom: 10px;
+    color: var(--tui-secondary-text-color);
+    font-size: 1em;
+}
+
+.no-requests p {
+    color: var(--tui-secondary-text-color);
+    font-size: 0.9em;
+}
+
+/* Remove previously complex button styling that might conflict */
+button.copy-button, button.open-button {
+    font-size: inherit; /* Let .action-button define it */
+}
+.action-button.text-icon,
+.action-button.text-icon .icon {
+    /* Deprecate these more complex structures for TUI */
+}
+
+/* Final pass on funnel list for TUI look */
+.funnel-list {
+    border: 1px solid var(--stable-table-border-color); /* Outer border for the whole list */
+    border-radius: 0; /* Sharp corners */
+    overflow: hidden; /* To contain borders correctly */
+    margin-top: 10px; /* Some space above the list */
+}
+
+/* Remove prior striping rules if they existed with different selectors */
+/* .funnel-list li:nth-child(odd) .funnel-item, already handled by new > combinator rules */
+/* .funnel-list li:nth-child(even) .funnel-item, already handled by new > combinator rules */
+
+/* Adjusting program name and nav to be more TUI like (subtle) */
+.program-name {
+    color: var(--tui-text-color); /* Revert from secondary to main text */
+    font-size: 1em; /* Ensure consistency */
+    font-weight: bold; /* As per screenshot */
+    /* Keep display:flex, align-items: center, padding from above */
+    border-right: 1px solid var(--tui-accent-color); 
+}
+nav {
+    /* display: flex; align-items: stretch; from above */
+    border-left: none; /* Remove this, individual items have borders */
+    padding-left: 0;
+}
+nav a {
+    /* styles from nav a, .nav-icon-placeholder group apply */
+    margin-left: 0; /* Remove individual margin, borders handle spacing */
+}
+nav a.active, nav a:hover {
+    /* styles from nav a.active, nav a:hover, .nav-icon-placeholder:hover group apply */
+}
+
+/* Hide original button texts if we only use icons */
+.action-button span.button-text { 
+    display: none; 
+}
+
+/* Styling for the help text at the bottom if we add it */
+footer {
+    border-top: 1px solid var(--tui-border-color);
+    padding: 8px 15px;
+    color: var(--tui-secondary-text-color);
+    font-size: 0.9em;
+    margin-top: 20px;
+    text-align: center;
+}
+
+footer .program-version {
+    float: right;
+    color: var(--tui-text-color);
+}
+
+/* Funnel Requests Page - Two Column Layout */
+.funnel-meta-info {
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--tui-subtle-border);
+}
+
+.funnel-request-view-wrapper {
+    display: flex;
+    gap: 20px; /* Space between the two panes */
+    margin-top: 15px;
+}
+
+.requests-log-pane {
+    flex: 0 0 300px; /* Fixed width for the log pane, adjust as needed */
+    max-height: 60vh; /* Or a fixed height like 500px, adjust as needed */
+    overflow-y: auto;
+    border: 1px solid var(--stable-table-border-color);
+    background-color: var(--stable-table-row-even-bg); /* Or another dark bg */
+}
+
+.request-details-pane {
+    flex-grow: 1; /* Takes remaining space */
+    border: 1px solid var(--stable-table-border-color);
+    padding: 15px;
+    background-color: var(--tui-bg-color);
+}
+
+.request-item {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--stable-table-border-color);
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.request-item:last-child {
+    border-bottom: none;
+}
+
+.request-item:hover {
+    background-color: var(--stable-table-row-hover-bg);
+}
+
+.request-item.selected-request {
+    background-color: var(--tui-accent-color);
+    color: var(--tui-active-row-text-color);
+}
+
+.request-item-line-1,
+.request-item-line-2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9em;
+}
+
+.request-item-line-1 {
+    margin-bottom: 4px;
+}
+
+.request-item .method {
+    font-weight: bold;
+    flex-basis: 50px; /* Give method a bit of fixed space */
+    color: var(--tui-accent-color); /* Or a specific color per method */
+}
+
+.request-item.selected-request .method {
+    color: var(--tui-active-row-text-color); /* Override for selected */
+}
+
+.request-item .path {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 8px;
+    text-align: left;
+}
+
+.request-item .status {
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+/* Example status code coloring - add more as needed */
+.request-item .code-200, .request-item .code-201, .request-item .code-204 {
+    background-color: #28a745; /* Green */
+    color: white;
+}
+.request-item .code-301, .request-item .code-302, .request-item .code-304 {
+    background-color: #ffc107; /* Yellow */
+    color: #333;
+}
+.request-item .code-400, .request-item .code-401, .request-item .code-403, .request-item .code-404 {
+    background-color: #dc3545; /* Red */
+    color: white;
+}
+.request-item .code-500, .request-item .code-502, .request-item .code-503 {
+    background-color: #6f42c1; /* Purple/Darker Red */
+    color: white;
+}
+
+/* Ensure selected item status code colors are still visible if bg changes, or make them inherit */
+.request-item.selected-request .status {
+    /* If selected bg is light, make text dark, or remove specific status bg */
+    background-color: rgba(0,0,0,0.2); /* Darker patch on the accent bg */
+    color: var(--tui-active-row-text-color);
+}
+
+.request-item .duration {
+    font-size: 0.85em;
+    color: var(--tui-secondary-text-color);
+    margin-left: 8px;
+}
+
+.request-item.selected-request .duration {
+    color: var(--tui-active-row-text-color); 
+}
+
+.no-requests-message,
+.select-request-message {
+    padding: 15px;
+    color: var(--tui-secondary-text-color);
+    text-align: center;
+}
+
+/* Request Details Pane Styling */
+.request-details-pane h3, 
+.request-details-pane h4 {
+    color: var(--tui-text-color);
+    margin-top: 0;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--tui-subtle-border);
+    font-weight: 600; /* Match other headers */
+}
+.request-details-pane h3 { font-size: 1.2em; }
+.request-details-pane h4 { font-size: 1.05em; color: var(--tui-secondary-text-color); margin-top:15px;}
+
+.request-summary-section {
+    margin-bottom: 20px;
+}
+
+.summary-item {
+    display: flex;
+    margin-bottom: 8px; /* Increased spacing slightly */
+    font-size: 0.9em; /* Adjusted size */
+}
+
+.summary-item .label {
+    flex: 0 0 120px; /* Adjusted width for labels */
+    font-weight: bold;
+    color: var(--tui-secondary-text-color);
+    padding-right: 10px;
+}
+
+.summary-item .value {
+    flex-grow: 1;
+    color: var(--tui-text-color);
+    word-break: break-all; /* For long values like paths */
+}
+
+/* Tab Styling - Geth-inspired block tabs */
+.details-tabs {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: none; /* Remove the underline for the whole tab bar, individual tabs will have borders */
+}
+
+.tab-button {
+    padding: 8px 15px;
+    cursor: pointer;
+    background-color: var(--tui-bg-color); /* Default background */
+    border: 1px solid var(--tui-border-color); /* Border for all tabs */
+    color: var(--tui-text-color);
+    font-family: inherit;
+    font-size: 0.95em;
+    margin-right: -1px; /* Overlap borders slightly for a connected look */
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    text-align: center;
+}
+
+.tab-button:first-child {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.tab-button:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    margin-right: 0;
+}
+
+.tab-button:hover {
+    background-color: var(--tui-accent-color); /* Accent color on hover */
+    color: var(--tui-bg-color); /* Dark text on hover for contrast */
+    border-color: var(--tui-accent-color);
+}
+
+.tab-button.active {
+    background-color: var(--tui-accent-color);
+    color: var(--tui-bg-color); /* Dark text for active tab, ensures contrast with accent bg */
+    border-color: var(--tui-accent-color); /* Accent border for active tab */
+    font-weight: bold;
+    position: relative; /* For z-index if needed, and to ensure it's above siblings for border overlap */
+    z-index: 1;
+}
+
+/* Tab Content Area Styling */
+.tab-content-area pre {
+    background-color: #1e1e1e; /* Slightly different dark, or use var(--tui-bg-color) and ensure contrast */
+    padding: 15px;
+    border-radius: 4px;
+    color: var(--tui-text-color);
+    white-space: pre-wrap;      
+    word-break: break-all;      
+    font-family: var(--monospace-font);
+    font-size: 0.9em;
+    border: 1px solid var(--tui-subtle-border);
+    line-height: 1.6;
+}
+
+.tab-detail-content {
+    display: none; /* Hidden by default, JS will show active tab */
+}
+
+.tab-detail-content.active {
+    display: block;
+}
+
+/* Breadcrumb Styling */
+.breadcrumb {
+    font-size: 0.95em;
+    margin-bottom: 15px;
+    color: var(--tui-secondary-text-color);
+}
+
+.breadcrumb a {
+    color: var(--tui-accent-color);
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* Action Icons for URLs */
+.action-icon {
+    margin-left: 8px;
+    cursor: pointer;
+    font-size: 1.1em; /* Adjust if icons look too small/large */
+    color: var(--tui-accent-color);
+    text-decoration: none; /* For <a> tags used as icons */
+}
+
+.action-icon:hover {
+    color: var(--link-hover-color); /* Lighter accent on hover */
+}
+
+.url-link {
+    color: var(--tui-text-color); /* Make the URL text standard, not accent */
+    text-decoration: none;
+}
+
+.url-link:hover {
+    text-decoration: underline;
+}
+
+/* Ensure request log items are not overly affected if these general styles are too broad */
+/* This is just a precaution, current .request-item styling should be specific enough */
+.requests-log-pane .request-item .tab-button {
+    /* Override if necessary, but hopefully not needed */
+}
+
+/* Ensure funnel list items are not affected */
+.funnels-list .funnel-item .tab-button {
+    /* Override if necessary */
+} 

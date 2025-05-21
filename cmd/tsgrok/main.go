@@ -27,7 +27,11 @@ func main() {
 
 	messageBus := &util.MessageBusImpl{}
 	funnelRegistry := funnel.NewFunnelRegistry()
-	httpServer := funnel.NewHttpServer(util.GetProxyHttpPort(), messageBus, funnelRegistry, serverErrorLog)
+	httpServer, err := funnel.NewHttpServer(util.GetProxyHttpPort(), messageBus, funnelRegistry, serverErrorLog)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating HTTP server: %v\n", err)
+		os.Exit(1)
+	}
 
 	m := tui.InitialModel(funnelRegistry, serverErrorLog)
 
