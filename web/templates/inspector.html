@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .Title }} - {{ .ProgramName }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    {{ template "_header.html" . }}
+    <main>
+        <div class="container">
+            <h2>Active Funnels</h2>
+            {{ if .Funnels }}
+                <div class="funnel-list">
+                    <div class="funnel-list-header-row">
+                        <div class="name-col">Remote Address</div>
+                        <div class="target-col">Local Target</div>
+                    </div>
+                    <ul>
+                        {{ range $index, $funnel := .Funnels }}
+                            <li {{ if eq $index 0 }} class="active" {{ end }}>
+                                <div class="funnel-item">
+                                    <div class="funnel-info">
+                                        <div class="name-col funnel-remote-url" title="{{ .RemoteURL }}">
+                                            <a href="/inspect/{{ .ID }}">{{ .RemoteURL }}</a>
+                                            <span class="action-icon copy-url-button" title="Copy URL" data-url="{{ .RemoteURL }}">📋</span>
+                                            <a href="{{ .RemoteURL }}" target="_blank" class="action-icon open-url-button" title="Open URL">🔗</a>
+                                        </div>
+                                        <div class="target-col funnel-target text-monospace">{{ .LocalTarget }}</div>
+                                    </div>
+                                </div>
+                            </li>
+                        {{ end }}
+                    </ul>
+                </div>
+            {{ else }}
+                <div class="no-requests">
+                    <h2>No Funnels Active</h2>
+                    <p>Create a funnel to start inspecting requests. (e.g., using the CLI)</p>
+                </div>
+            {{ end }}
+        </div>
+    </main>
+    <script src="/static/js/app.js"></script>
+</body>
+</html> 

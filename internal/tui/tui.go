@@ -843,7 +843,7 @@ func (m model) View() string {
 	}
 
 	finalView := lipgloss.JoinVertical(lipgloss.Left,
-		lipgloss.NewStyle().Height(contentHeight).Render(mainContent), // Render content within allocated space
+		lipgloss.NewStyle().Height(contentHeight).Render(mainContent),
 		footer,
 	)
 
@@ -896,7 +896,12 @@ func (m model) viewListView(contentHeight int) string {
 
 	m.table.SetWidth(m.width - 20)
 
-	return m.renderContent(title, m.table.View(), contentHeight, 1)
+	content := lipgloss.JoinVertical(lipgloss.Left,
+		m.table.View(),
+		m.webUIView(m.width),
+	)
+
+	return m.renderContent(title, content, contentHeight, 1)
 }
 
 // viewCreateView renders the funnel creation form
@@ -1197,4 +1202,20 @@ func (m model) viewRequestDetailView(contentHeight int) string {
 
 	// Use the standard renderContent helper
 	return m.renderContent(title, content, contentHeight, 1)
+}
+
+func (m model) webUIView(width int) string {
+	webUILink := "http://localhost:4141"
+	text := fmt.Sprintf("Local Web UI: %s", webUILink)
+
+	// Style for the Web UI bar
+	// Using a light foreground color, similar to footer text
+	// Centered, full width, with horizontal padding
+	style := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("229")). // Light color for text
+		Padding(0, 1).                     // Minimal vertical, some horizontal padding
+		Width(m.width).
+		Align(lipgloss.Center)
+
+	return style.Render(text)
 }

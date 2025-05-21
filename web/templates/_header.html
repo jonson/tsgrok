@@ -1,0 +1,13 @@
+{{/* File: web/templates/_header.html */}}
+{{/* Expects a context "." containing ProgramName and ActiveNav fields */}}
+<header>
+    <div class="container">
+        <span class="program-name">
+            {{/* Link program name to home page */}}
+            <a href="/" style="color: var(--tui-text-color, #ecf0f1); text-decoration: none;">{{ .ProgramName }}</a>
+        </span>
+        <nav>
+            <a href="/" {{ if eq .ActiveNav "Inspect" }}class="active"{{ end }}>Inspect</a>
+        </nav>
+    </div>
+</header> 

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funnel {{ .Funnel.ID }} - {{ .ProgramName }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    {{ template "_header.html" . }}
+    <main>
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="/inspect">Home</a> / <span>Funnel: {{ .Funnel.DisplayName }}</span>
+            </div>
+            <div class="funnel-meta-info">
+                <p><strong>Remote URL:</strong> <a href="{{ .Funnel.RemoteURL }}" target="_blank" class="url-link">{{ .Funnel.RemoteURL }}</a>
+                    <span class="action-icon copy-url-button" title="Copy URL" data-url="{{ .Funnel.RemoteURL }}">📋</span>
+                    <a href="{{ .Funnel.RemoteURL }}" target="_blank" class="action-icon open-url-button" title="Open URL">🔗</a>
+                </p>
+                <p><strong>Local Target:</strong> {{ .Funnel.LocalTarget }}
+                    <span class="action-icon copy-url-button" title="Copy URL" data-url="{{ .Funnel.LocalTarget }}">📋</span>
+                    {{/* The 'open' button for local target might be less useful but included for consistency */}}
+                    <a href="{{ .Funnel.LocalTarget }}" target="_blank" class="action-icon open-url-button" title="Open URL">🔗</a>
+                </p>
+            </div>
+
+            <div class="funnel-request-view-wrapper">
+                <div class="requests-log-pane">
+                    {{ if .Requests }}
+                        {{ range $index, $req := .Requests }}
+                            <div class="request-item" 
+                                 data-request-idx="{{ $index }}"
+                                 hx-get="/inspect/{{$.Funnel.ID}}/request/{{$req.UUID}}" 
+                                 hx-target="#request-details-content-wrapper"
+                                 hx-swap="innerHTML">
+                                <div class="request-item-summary">
+                                    <span class="{{ $req.MethodClass }}">{{ $req.Method }}</span>
+                                    <span class="path" title="{{ $req.RequestURLString }}">{{ $req.RequestPath }}</span>
+                                </div>
+                                <div class="request-item-meta">
+                                    <span class="status status-{{ $req.StatusClass }}">{{ $req.StatusCode }}</span>
+                                    <span class="duration">{{ $req.FormattedDuration }}</span>
+                                </div>
+                            </div>
+                        {{ end }}
+                    {{ else }}
+                        <p class="no-requests-message">No requests captured for this funnel yet.</p>
+                    {{ end }}
+                </div>
+                <div class="request-details-pane">
+                    <div id="request-details-content-wrapper">
+                         <p id="initial-detail-message" class="select-request-message">Select a request to view details.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script src="/static/js/htmx.min.js" defer></script>
+    <script src="/static/js/app.js" defer></script>
+</body>
+</html> 

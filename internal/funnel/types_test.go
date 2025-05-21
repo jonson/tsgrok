@@ -245,7 +245,7 @@ func TestCaptureRequestResponse_Type(t *testing.T) {
 		{"Video MP4", "video/mp4", "video"},
 		{"Application Octet Stream", "application/octet-stream", "application"},
 		{"Weird format", "foo/bar", "foo"},
-		{"Only main type", "audio", "audio"}, 
+		{"Only main type", "audio", "audio"},
 		{"Empty string after split", "/", ""}, // Invalid Content-Type
 	}
 

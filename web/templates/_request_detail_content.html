@@ -1,0 +1,55 @@
+{{/* File: web/templates/_request_detail_content.html */}}
+{{/* This template receives a ClientRequestDetails struct as its data context (e.g., ".") */}}
+<div class="details-container">
+    {{/* Tabs */}}
+    <div class="details-tabs">
+        <button class="tab-button active" data-tab-target="tab-content-overview{{if .UUID}}-{{.UUID}}{{end}}">Overview</button>
+        <button class="tab-button" data-tab-target="tab-content-headers{{if .UUID}}-{{.UUID}}{{end}}">Headers</button>
+        <button class="tab-button" data-tab-target="tab-content-request-body{{if .UUID}}-{{.UUID}}{{end}}">Request</button>
+        <button class="tab-button" data-tab-target="tab-content-response-body{{if .UUID}}-{{.UUID}}{{end}}">Response</button>
+    </div>
+
+    {{/* Tab Content Area */}}
+    <div class="tab-content-area">
+        {{/* Overview Tab Content */}}
+        <div id="tab-content-overview{{if .UUID}}-{{.UUID}}{{end}}" class="tab-detail-content active">
+            {{/* Request Overview Section - moved here */}}
+            <div class="request-summary-section">
+                <h3>Request Overview</h3>
+                <div class="summary-item"><span class="label">Path:</span> <span class="value">{{ .Path | default "/" }}</span></div>
+                <div class="summary-item"><span class="label">Method:</span> <span class="value">{{ .Method | default "N/A" }}</span></div>
+                <div class="summary-item"><span class="label">Status:</span> <span class="value">{{ .Status | default "N/A" }}</span></div>
+                <div class="summary-item"><span class="label">Duration:</span> <span class="value">{{ .Duration | default "N/A" }}</span></div>
+                <div class="summary-item"><span class="label">Time:</span> <span class="value">{{ .Time | default "N/A" }}</span></div>
+                <div class="summary-item"><span class="label">Client IP:</span> <span class="value">{{ .ClientIP | default "N/A" }}</span></div>
+            </div>
+        </div>
+
+        <div id="tab-content-headers{{if .UUID}}-{{.UUID}}{{end}}" class="tab-detail-content">
+            <h4>Headers</h4>
+            <pre>Request Headers:
+{{- range .RequestHeaders}}
+{{.Name}}: {{.Value}}
+{{- end}}
+
+Response Headers:
+{{- range .ResponseHeaders}}
+{{.Name}}: {{.Value}}
+{{- end}}</pre>
+        </div>
+        <div id="tab-content-request-body{{if .UUID}}-{{.UUID}}{{end}}" class="tab-detail-content"
+             hx-get="/inspect/{{.FunnelID}}/request/{{.UUID}}/body/request"
+             hx-trigger="revealed"
+             hx-swap="innerHTML">
+            <h4>Request Body</h4>
+            <p>Loading request body...</p> {{/* Placeholder text */}}
+        </div>
+        <div id="tab-content-response-body{{if .UUID}}-{{.UUID}}{{end}}" class="tab-detail-content"
+             hx-get="/inspect/{{.FunnelID}}/request/{{.UUID}}/body/response"
+             hx-trigger="revealed"
+             hx-swap="innerHTML">
+            <h4>Response Body</h4>
+            <p>Loading response body...</p> {{/* Placeholder text */}}
+        </div>
+    </div>
+</div> 
